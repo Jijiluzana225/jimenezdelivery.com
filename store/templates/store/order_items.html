@@ -205,7 +205,7 @@
         <button type="submit" class="action-btn update-btn">Mark as DELIVERED</button>
     </form>
     {% endif %}
-    
+    <button class="action-btn update-btn" onclick="printReceipt()">Print Receipt</button>
     {% endif %}
 
 </div>
@@ -251,5 +251,62 @@
         }
     }
 </script>
+
+<script>
+    function printReceipt() {
+    let receiptContent = `
+        <style>
+            @page {
+                margin: 0; /* Removes header and footer */
+            }
+            body, html {
+                font-family: Calibre;
+                font-size: 10px;
+                margin-left: 10px;
+                padding: 0;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+            }
+            .receipt {
+                text-align: left;
+                max-width: 280px;
+                margin-left: 10px;
+                padding: 0;
+                border: none;
+                
+            }
+        </style>
+        <div class="receipt">
+Order Receipt
+---------------------------------------------
+Order ID: {{ order.id }}
+Customer: {{ order.customer.username }}
+---------------------------------------------
+Items:
+{% for item in items %}
+{{ item.product_name }}
+x{{ item.quantity }} @ {{ item.product_price }}
+
+Total: {{ item.total_price|floatformat:2 }}
+---------------------------------------------
+{% endfor %}
+Total + Delivery Fee: {{ order.total_price|floatformat:2 }}
+---------------------------------------------
+Thank you for your purchase!
+        </div>
+    `;
+
+    let printWindow = window.open('', '', 'width=300,height=400');
+    printWindow.document.write(receiptContent);
+    printWindow.document.close();
+    printWindow.print();
+    printWindow.onafterprint = function () {
+    printWindow.close(); // Close the blank page after printing
+    };
+
+}
+
+    </script>
+    
 
 {% endblock %}
