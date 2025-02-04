@@ -1,0 +1,73 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <div class="container">
+        {% if request.user.is_authenticated and 'Store' not in request.user.groups.all|join:" " %}
+            <a href="{% url 'customer_dashboard' %}" class="order-btn">My Orders</a>
+        {% endif %}
+
+        {% if request.user.is_authenticated and 'Store' in request.user.groups.all|join:" " %}
+            <a href="{% url 'store_dashboard' %}" class="store-btn">My Store</a>
+            <a href="{% url 'edit_prices' %}" class="prices-btn">Update Prices</a>
+        {% endif %}
+
+        <h1>Product Type</h1>
+        <!-- Dropdown Filter -->
+        <form method="get" action="">
+            <select name="product_type" onchange="this.form.submit()">
+                <option value="">-- Select Product Type --</option>
+                {% for product_type in product_types %}
+                    <option value="{{ product_type.id }}" {% if selected_product_type == product_type.id %}selected{% endif %}>
+                        {{ product_type.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <!-- Search Input for Filtering Stores -->
+        <div class="search-box">
+            <input type="text" id="storeSearch" placeholder="Search for a store..." onkeyup="filterStores()">
+        </div>
+
+        <!-- Store List -->
+        <ul class="store-list" id="storeList">
+            {% if stores %}
+                {% for store in stores %}
+                    <li>
+                        {% if store.open %}
+                            <a href="{% url 'store_location' id=store.id %}">{{ store.name }}</a>
+                        {% else %}
+                            <a href="#" class="disabled" style="cursor: not-allowed; background-color: #ddd; color: #aaa;">
+                                {{ store.name }} (Opens Soon!)
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>No stores found for the selected product type.</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Register your Store: <h3>0994 6415467</h3></p>
+    </footer>
+
+    <script>
+        function filterStores() {
+            const searchInput = document.getElementById('storeSearch').value.toLowerCase();
+            const storeList = document.getElementById('storeList');
+            const stores = storeList.getElementsByTagName('li');
+
+            for (let i = 0; i < stores.length; i++) {
+                const storeName = stores[i].innerText.toLowerCase();
+                if (storeName.includes(searchInput)) {
+                    stores[i].style.display = '';
+                } else {
+                    stores[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+{% endblock %}

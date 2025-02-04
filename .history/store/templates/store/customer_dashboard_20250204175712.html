@@ -1,0 +1,76 @@
+{% extends 'store/base.html' %}
+{% load humanize %}
+
+{% block title %}Customer Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    /* Your styles... */
+</style>
+
+<h1 class="dashboard-title">Your Orders</h1>
+
+{% if orders %}
+    <div class="orders-table-container">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Store</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Placed On</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr class="order-row" 
+                        style="background-color: 
+                            {% if order.status == 'Pending' %}White
+                            {% elif order.status == 'Declined' %}Orange
+                            {% elif order.status == 'Preparing' %}lightYellow
+                            {% elif order.status == 'On the Way' %}Aqua
+                            {% elif order.status == 'Delivered' %}lightgreen
+                            {% else %}#ffffff
+                            {% endif %};">
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.store.name }}</td>
+                        <td>{{ order.total_price|floatformat:2|intcomma }}</td>
+                        <td class="status">{{ order.status }}</td>
+                        <td>{{ order.created_at }}</td>
+                        <td><a href="/order/{{ order.id }}/items" class="btn btn-primary">Orders</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="no-orders-message">You have no orders yet.</p>
+{% endif %}
+
+<!-- JavaScript for Notification and Sound -->
+<script>
+    {% if status_changes %}
+        // Play a sound alert when an order status changes
+        var audio = new Audio('/static/sounds/notification.mp3');
+        audio.play();
+
+        // Show browser notification for each changed order
+        {% for order_id in status_changes %}
+            if (Notification.permission === 'granted') {
+                new Notification('Order Status Changed', {
+                    body: 'Order #{{ order_id }} has a status update.',
+                    icon: '/static/images/order-icon.png'
+                });
+            }
+        {% endfor %}
+    {% else %}
+        // Request permission for notifications if not already granted
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    {% endif %}
+</script>
+
+{% endblock %}

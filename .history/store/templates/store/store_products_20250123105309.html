@@ -1,0 +1,522 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Order from {{ store.name }}{% endblock %}
+
+{% block content %}
+
+<style>
+    /* General Styles */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+    }
+
+    h1, h2, h3 {
+        color: #333;
+        font-weight: 600;
+    }
+
+    p {
+        font-size: 1rem;
+        color: #666;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Container for left and right columns */
+    .container {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px;
+        max-width: 1200px;
+        margin: 0 auto;
+        flex-wrap: wrap;
+    }
+
+    /* Left column - product listing */
+    .left-column {
+        width: 65%;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .left-column h1 {
+        font-size: 2rem;
+        color: #2e3b4e;
+    }
+
+    .left-column p {
+        font-size: 1rem;
+        margin-bottom: 20px;
+    }
+
+    .search-box {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .search-box input {
+        width: 80%;
+        padding: 10px;
+        font-size: 1rem;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        margin-right: 10px;
+    }
+
+    .search-box button {
+        background-color: #3498db;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .search-box button:hover {
+        background-color: #2980b9;
+    }
+
+    .products {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+    }
+
+    /* Individual Product Cards */
+    .product-card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .product-card img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .product-card h3 {
+        font-size: 1.2rem;
+        color: #2e3b4e;
+        margin: 10px 0;
+    }
+
+    .product-card p {
+        font-size: 0.9rem;
+        color: #777;
+    }
+
+    .product-card .formatted-price {
+        font-size: 1.1rem;
+        color: #e74c3c;
+        font-weight: bold;
+    }
+
+    .product-card button {
+        background-color: #28a745;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .product-card button:hover {
+        background-color: #218838;
+    }
+
+    /* Spacing Between Qty and Add to Cart button */
+    .product-card label {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .product-card input[type="number"] {
+        width: 60px;
+        padding: 5px;
+        margin-bottom: 15px; /* Space between input and button */
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    /* Right Column - Cart */
+    .right-column {
+        width: 30%;
+        padding: 20px;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .right-column h2 {
+        font-size: 1.8rem;
+        color: #2e3b4e;
+        margin-bottom: 20px;
+    }
+
+    .cart-items {
+        margin-bottom: 20px;
+    }
+
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .cart-item p {
+        font-size: 0.85rem; /* Smaller font size */
+        color: #333;
+    }
+
+    .cart-item input {
+        width: 50px;
+        padding: 5px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        text-align: center;
+    }
+
+    .cart-item button {
+        background-color: #e74c3c;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .cart-item button:hover {
+        background-color: #c0392b;
+    }
+
+    .cart-total {
+        font-size: 0.9rem; /* Smaller font size */
+        font-weight: bold;
+        color: #333;
+        margin-top: 20px;
+    }
+
+    .money-input {
+        margin-top: 20px;
+    }
+
+    .money-input input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+    }
+
+    .money-input small {
+        font-size: 0.8rem;
+        color: #777;
+        display: block;
+        margin-top: 5px;
+    }
+
+    .additional-instructions {
+        margin-top: 20px;
+    }
+
+    .additional-instructions textarea {
+        width: 100%;
+        height: 100px;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        font-size: 1rem;
+    }
+
+    .order-button {
+        background-color: #3498db;
+        color: #fff;
+        border: none;
+        padding: 15px 20px;
+        font-size: 1.1rem;
+        border-radius: 4px;
+        width: 100%;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .order-button:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+    }
+
+    .order-button:hover:not(:disabled) {
+        background-color: #2980b9;
+    }
+
+    /* Responsive Design */
+    /* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .left-column, .right-column {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+
+    .products {
+        grid-template-columns: repeat(2, 1fr); /* Two columns on smaller screens */
+        gap: 10px; /* Adjust spacing for smaller screens */
+    }
+
+    .store-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .store-header h1 {
+        font-size: 2rem;
+        color: #2e3b4e;
+        margin-bottom: 10px;
+    }
+
+    .store-header p {
+        font-size: 1rem;
+        color: #666;
+    }
+
+    .product-card img {
+        max-width: 80%;  /* Adjust this percentage to control the size */
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .cart-items {
+        font-size: 0.75rem; /* Smaller font size */
+    }
+    
+    .cart-item p {
+        font-size: 0.75rem; /* Smaller font size for cart item text */
+    }
+
+    
+
+}
+
+
+
+</style>
+
+<div class="container">
+    <div class="left-column">
+        <div class="store-header">
+        <h1>{{ store.name }}</h1>
+        <p>Contact: {{ store.contact_number }}</p>
+        </div>
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" id="searchBox" placeholder="Search for a product..." onkeyup="filterProducts()">
+            <button>Search</button>
+        </div>
+
+        <div class="products" id="products-list">
+            {% for item in product %}
+            <div class="product-card" data-name="{{ item.name|lower }}">
+                <img src="{{ item.picture.url }}" alt="{{ item.name }}">
+                <h3>{{ item.name }}</h3>
+                <p>{{ item.description }}</p>
+                <p>Price: <span class="formatted-price">{{ item.price }}</span></p>
+                <label for="quantity-{{ item.id }}">Qty:</label>
+                <input type="number" id="quantity-{{ item.id }}" name="quantity" min="1" value="1">
+                <button onclick="addToCart({{ item.id }}, '{{ item.name }}', {{ item.price }})">Add to Cart</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right column (cart) -->
+    <div class="right-column">
+        <h2>Your Cart</h2>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-total" id="cart-total" style="font-size:40px; color:blue";>Total: 0.00</div>
+
+       <div class="money-input">
+            <label for="money">Money</label>
+            <input type="number" id="money" name="money" placeholder="Enter amount">
+            <small>For change purposes.</small>
+        </div>
+
+        <!-- Additional Instructions Section -->
+        <div class="additional-instructions">
+            <label for="additional-instructions">Additional Instructions</label>
+            <textarea id="additional-instructions" placeholder="Enter any additional instructions for your order"></textarea>
+        </div>
+
+        <!-- Order Now Button -->
+        <button class="order-button" id="orderButton" onclick="proceedToCheckout()" disabled>Order Now</button>
+    </div>
+</div>
+
+
+
+<script>
+    let cart = [];
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
+    }
+
+    function addToCart(itemId, itemName, itemPrice) {
+        const quantity = parseInt(document.getElementById(`quantity-${itemId}`).value);
+        const existingItem = cart.find(item => item.id === itemId);
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            cart.push({ id: itemId, name: itemName, price: itemPrice, quantity: quantity });
+        }
+
+        renderCart();
+    }
+
+    function updateCartItem(itemId, newQuantity) {
+        const item = cart.find(item => item.id === itemId);
+        if (item) {
+            item.quantity = newQuantity;
+            renderCart();
+        }
+    }
+
+    function deleteCartItem(itemId) {
+        cart = cart.filter(item => item.id !== itemId);
+        renderCart();
+    }
+
+    function renderCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const orderButton = document.getElementById('orderButton');
+        cartItemsContainer.innerHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+
+            cartItemsContainer.innerHTML += ` 
+                <div class="cart-item">
+                    <p>${item.name}</p>
+                    <p>Price: ${formatPrice(item.price)}</p>
+                    <input type="number" min="1" value="${item.quantity}" onchange="updateCartItem(${item.id}, this.value)">
+                    <p>${formatPrice(itemTotal)}</p>
+                    <button onclick="deleteCartItem(${item.id})">×</button>
+                </div>
+            `;
+        });
+
+        cartTotal.innerText = `Total: ${formatPrice(total)}`;
+
+        // Enable the "Order Now" button only if the cart is not empty
+        orderButton.disabled = cart.length === 0;
+    }
+
+    function calculateTotalPrice() {
+        return cart.reduce((total, item) => total + item.price * item.quantity, 0);
+    }
+
+    function proceedToCheckout() {
+        const storeId = '{{ store.id }}';  // Assuming store.id is available
+        const totalPrice = calculateTotalPrice();  // Total price from cart
+        const cartItems = cart.map(item => `${item.name},${item.price},${item.quantity}`).join("|");
+    
+        const money = document.getElementById('money').value;
+        const instructions = document.getElementById('additional-instructions').value;
+    
+        // Make the POST request
+        fetch('/checkout/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
+            },
+            body: `store_id=${storeId}&total_price=${totalPrice}&cart_items=${cartItems}&money=${money}&instructions=${instructions}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order placed successfully!');
+                window.location.href = '/dashboard';
+            } else {
+                alert('There was an error placing your order.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+    
+
+
+    function filterProducts() {
+        const searchTerm = document.getElementById("searchBox").value.toLowerCase();
+        const productCards = document.querySelectorAll(".product-card");
+
+        productCards.forEach(card => {
+            const productName = card.getAttribute("data-name");
+            if (productName.includes(searchTerm)) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+
+    function updateOrderStatus(orderId, status) {
+        fetch(`/update_order_status/${orderId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Order status updated');
+            } else {
+                alert('Failed to update status');
+            }
+        });
+    }
+
+    
+
+    
+</script>
+
+{% endblock %}

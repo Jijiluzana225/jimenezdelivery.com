@@ -1,0 +1,111 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Card styling */
+        .form-container {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        /* Button hover effect */
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004da0;
+        }
+
+        /* Input field styling */
+        .form-control:focus {
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            border-color: #80bdff;
+        }
+
+        /* Icon inside input */
+        .input-group-text {
+            background-color: #f8f9fa;
+            border-right: none;
+        }
+
+        .form-control {
+            border-left: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">{{ title }}</h1>
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <div class="form-container">
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Name Field -->
+                        <div class="mb-3">
+                            <label for="id_name" class="form-label">Product Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-box"></i></span>
+                                {{ form.name }}
+                            </div>
+                        </div>
+
+                        <!-- Type Field -->
+                        <div class="mb-3">
+                            <label for="id_type" class="form-label">Product Type</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-tags"></i></span>
+                                {{ form.type }}
+                            </div>
+                        </div>
+
+                        <!-- Description Field -->
+                        <div class="mb-3">
+                            <label for="id_description" class="form-label">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <!-- Price Field -->
+                        <div class="mb-3">
+                            <label for="id_price" class="form-label">Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">₱</span> 
+                                {{ form.price }}
+                            </div>
+                        </div>
+
+                        <!-- Picture Field -->
+                        <div class="mb-3">
+                            <label for="id_picture" class="form-label">Product Image</label>
+                            {{ form.picture }}
+                        </div>
+
+                        <!-- Active Field -->
+                        <div class="mb-3 form-check">
+                            {{ form.active }}
+                            <label for="id_active" class="form-check-label">Active</label>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100">
+                            {% if product %} Update Product {% else %} Add Product {% endif %}
+                        </button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'product_list' %}" class="btn btn-secondary">Back to List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+</body>
+{% endblock %}

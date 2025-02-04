@@ -1,0 +1,238 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store List</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Container Styles */
+        .container {
+            max-width: 960px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+        }
+
+        /* Typography */
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Button Styles */
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .btn {
+            display: inline-block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 15px 30px;
+            font-size: 1rem;
+            text-align: center;
+            border: none;
+            border-radius: 50px;
+            text-decoration: none;
+            color: #fff;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn.order-btn {
+            background: linear-gradient(145deg, #4e73df, #ff1100);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.store-btn {
+            background: linear-gradient(145deg, #0bfc1f, #fc0505);
+        }
+
+        .btn.prices-btn {
+            background: linear-gradient(145deg, #8b4513, #ff4500);
+        }
+
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Store List Styling */
+        .store-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        .store-list li {
+            margin: 10px 0;
+        }
+
+        .store-list a {
+            display: block;
+            padding: 10px 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: #fff;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: background 0.3s ease, box-shadow 0.3s ease;
+            text-align: center;
+        }
+
+        .store-list a:hover {
+            background: linear-gradient(90deg, #2575fc, #6a11cb);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .store-list a.disabled {
+            cursor: not-allowed;
+            background-color: #ddd;
+            color: #aaa;
+            pointer-events: none;
+        }
+
+        /* Search Box Styling */
+        .search-box {
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border-radius: 5px;
+            border: 1px solid #ced4da;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer Styling */
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background: #f1f1f1;
+            color: #333;
+            border-top: 1px solid #ddd;
+        }
+
+        footer h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .product-type-label {
+            text-align: left;
+            font-size: 0.9rem;
+            color: #333;
+            margin-bottom: 10px;
+            margin-top:40;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="btn-container">
+            {% if request.user.is_authenticated and 'Store' not in request.user.groups.all|join:" " %}
+                <a href="{% url 'customer_dashboard' %}" class="btn order-btn">My Orders</a>
+            {% endif %}
+
+            {% if request.user.is_authenticated and 'Store' in request.user.groups.all|join:" " %}
+                <a href="{% url 'store_dashboard' %}" class="btn store-btn">My Store</a>
+                <a href="{% url 'edit_prices' %}" class="btn prices-btn">Update Prices</a>
+                <a href="{% url 'product_create' %}" class="btn prices-btn">Add Product</a>
+            {% endif %}
+        </div>
+
+        <h1 class="product-type-label">Product Type</h1>
+
+        <!-- Dropdown Filter -->
+        <form method="get" action="">
+            <select name="product_type" onchange="this.form.submit()">
+                <option value="">-- Select Product Type --</option>
+                {% for product_type in product_types %}
+                    <option value="{{ product_type.id }}" {% if selected_product_type == product_type.id %}selected{% endif %}>
+                        {{ product_type.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <!-- Search Input -->
+        <div class="search-box">
+            <input type="text" id="storeSearch" placeholder="Search for a store..." onkeyup="filterStores()">
+        </div>
+
+        <!-- Store List -->
+        <ul class="store-list" id="storeList">
+            {% if stores %}
+                {% for store in stores %}
+                    <li>
+                        {% if store.open %}
+                            <a href="{% url 'store_location' id=store.id %}">{{ store.name }}</a>
+                        {% else %}
+                            <a href="#" class="disabled">
+                                {{ store.name }} (Opens Soon!)
+                            </a>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>No stores found for the selected product type.</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Register your Store: <h3>0994 6415467</h3></p>
+    </footer>
+
+    <script>
+        function filterStores() {
+            const searchInput = document.getElementById('storeSearch').value.toLowerCase();
+            const storeList = document.getElementById('storeList');
+            const stores = storeList.getElementsByTagName('li');
+
+            for (let i = 0; i < stores.length; i++) {
+                const storeName = stores[i].innerText.toLowerCase();
+                if (storeName.includes(searchInput)) {
+                    stores[i].style.display = '';
+                } else {
+                    stores[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Checkout - {{ store.name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Styling for the checkout page */
+    .checkout-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .order-summary, .payment-details {
+        background-color: #f9f9f9;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .order-summary h2, .payment-details h2 {
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+    }
+
+    .order-summary .cart-item, .payment-details .form-group {
+        margin-bottom: 10px;
+    }
+
+    .form-group input, .form-group textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+        padding: 12px;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-primary:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+</style>
+
+<div class="checkout-container">
+    <div class="order-summary">
+        <h2>Order Summary</h2>
+        <div id="orderItems">
+            <!-- Cart items will be listed here -->
+        </div>
+        <div class="cart-total" id="cartTotal">Total: 0.00</div>
+    </div>
+
+    <div class="payment-details">
+        <h2>Payment Details</h2>
+        <form id="checkoutForm" action="{% url 'checkout' %}" method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="deliveryAddress">Delivery Address</label>
+                <textarea id="deliveryAddress" name="deliveryAddress" placeholder="Enter delivery address" required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="paymentMethod">Payment Method</label>
+                <select id="paymentMethod" name="paymentMethod" required>
+                    <option value="cash_on_delivery">Cash on Delivery</option>
+                    <option value="online_payment">Online Payment</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn-primary" id="placeOrderButton" disabled>Place Order</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let cart = JSON.parse(localStorage.getItem('cart')) || [];
+    let cartTotal = 0;
+
+    // Format price function
+    function formatPrice(price) {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
+    }
+
+    // Render cart items and calculate total
+    function renderOrderSummary() {
+        const orderItemsContainer = document.getElementById('orderItems');
+        const cartTotalElement = document.getElementById('cartTotal');
+        orderItemsContainer.innerHTML = '';
+        cartTotal = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            cartTotal += itemTotal;
+            orderItemsContainer.innerHTML += `
+                <div class="cart-item">
+                    <p>${item.name} x ${item.quantity} - ${formatPrice(itemTotal)}</p>
+                </div>
+            `;
+        });
+
+        cartTotalElement.innerText = `Total: ${formatPrice(cartTotal)}`;
+        document.getElementById('placeOrderButton').disabled = cart.length === 0;
+    }
+
+    renderOrderSummary();
+</script>
+
+{% endblock %}

@@ -1,0 +1,126 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center mb-4">{{ title }}</h1>
+    <div class="row justify-content-center">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+            <div class="form-container">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Name Field -->
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label">Product Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-box"></i></span>
+                            {{ form.name }}
+                        </div>
+                    </div>
+
+                    <!-- Type Field -->
+                    <div class="mb-3">
+                        <label for="id_type" class="form-label">Product Type</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-tags"></i></span>
+                            {{ form.type }}
+                        </div>
+                    </div>
+
+                    <!-- Description Field -->
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+
+                    <!-- Price Field -->
+                    <div class="mb-3">
+                        <label for="id_price" class="form-label">Price</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₱</span>  <!-- Pesos symbol -->
+                            {{ form.price }}
+                        </div>
+                    </div>
+
+                    <!-- Picture Field -->
+                    <div class="mb-3">
+                        <label for="id_picture" class="form-label">Product Image</label>
+                        {{ form.picture }}
+                    </div>
+
+                    <!-- Active Field -->
+                    <div class="mb-3 form-check">
+                        {{ form.active }}
+                        <label for="id_active" class="form-check-label">Inactive</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary w-100">{{ button_text }}</button>
+
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{% url 'product_list' %}" class="btn btn-secondary">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Card styling */
+    .form-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+
+    /* Button hover effect */
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004da0;
+    }
+
+    /* Input field styling */
+    .form-control:focus {
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        border-color: #80bdff;
+    }
+
+    /* Remove icon in the price field */
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+
+    .form-control {
+        border-left: 1px solid #ced4da; /* Add left border */
+        border-right: 1px solid #ced4da; /* Ensure the right border is present */
+    }
+
+    /* Adjust description textarea */
+    #id_description {
+        resize: vertical; /* Allow vertical resizing */
+        min-height: 150px;
+        border-left: 1px solid #ced4da; /* Add left border for the textarea */
+        width: 100%;  /* Make the textarea fully responsive */
+        box-sizing: border-box; /* Prevents overflow by including padding and borders in the element's total width */
+    }
+
+    /* Custom styling for description field */
+    .form-group {
+        margin-bottom: 1.5rem; /* Adjust bottom margin for form groups */
+    }
+
+    /* Ensure form container and fields are responsive */
+    .form-container {
+        max-width: 100%;
+    }
+
+    /* Prevent overflow on form fields */
+    .form-group input, .form-group select, .form-group textarea {
+        width: 100%;
+    }
+</style>
+
+{% endblock %}

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <style>
+        /* Add your CSS here */
+    </style>
+</head>
+<body>
+
+<!-- Shopping Cart -->
+<div id="cart-container">
+    <div id="cart-items"></div>
+    <div id="cart-total"></div>
+    <button id="orderButton" onclick="proceedToCheckout()" disabled>Order Now</button>
+</div>
+
+<!-- Additional Instructions -->
+<div>
+    <textarea id="additional-instructions" placeholder="Add any special instructions"></textarea>
+</div>
+
+<!-- Payment Details -->
+<div>
+    <input type="text" id="money" placeholder="Amount to Pay">
+</div>
+
+<script>
+// Sample cart data (replace with dynamic cart data)
+let cart = [
+    { id: 1, name: "Item 1", price: 100, quantity: 2 },
+    { id: 2, name: "Item 2", price: 200, quantity: 1 }
+];
+
+let deliveryFee = 50.00;  // Fixed delivery fee
+
+// Format price in PHP currency format
+function formatPrice(price) {
+    return new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
+}
+
+// Render the cart with items and total (including delivery fee)
+function renderCart() {
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotal = document.getElementById('cart-total');
+    const orderButton = document.getElementById('orderButton');
+    cartItemsContainer.innerHTML = ''; // Clear previous cart items
+    let total = 0;
+
+    // Loop through cart items and sum the total
+    cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        cartItemsContainer.innerHTML += `
+            <div class="cart-item">
+                <p>${item.name}</p>
+                <p>Price: ${formatPrice(item.price)}</p>
+                <input type="number" min="1" value="${item.quantity}" onchange="updateCartItem(${item.id}, this.value)">
+                <p>${formatPrice(itemTotal)}</p>
+                <button onclick="deleteCartItem(${item.id})">×</button>
+            </div>
+        `;
+    });
+
+    // Add delivery fee to the total
+    total += deliveryFee;
+
+    // Update the total price display
+    cartTotal.innerText = `Total: ${formatPrice(total)} (Including Delivery Fee: ${formatPrice(deliveryFee)})`;
+
+    // Enable the "Order Now" button only if the cart is not empty
+    orderButton.disabled = cart.length === 0;
+}
+
+// Update quantity of a specific cart item
+function updateCartItem(itemId, quantity) {
+    const item = cart.find(item => item.id === itemId);
+    if (item) {
+        item.quantity = parseInt(quantity, 10);
+        renderCart();  // Re-render the cart after updating
+    }
+}
+
+// Delete an item from the cart
+function deleteCartItem(itemId) {
+    cart = cart.filter(item => item.id !== itemId);
+    renderCart();  // Re-render the cart after deletion
+}
+
+// Proceed to checkout
+function proceedToCheckout() {
+    const storeId = '{{ store.id }}';  // Assuming store.id is available
+    const totalPrice = calculateTotalPrice();  // Total price from cart, including delivery fee
+    const cartItems = cart.map(item => `${item.name},${item.price},${item.quantity}`).join("|");
+    
+    const money = document.getElementById('money').value;
+    const instructions = document.getElementById('additional-instructions').value;
+    
+    // Make the POST request
+    fetch('/checkout/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
+        },
+        body: `store_id=${storeId}&total_price=${totalPrice}&cart_items=${cartItems}&money=${money}&instructions=${instructions}&delivery_fee=${deliveryFee}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Order placed successfully!');
+            window.location.href = '/dashboard';
+        } else {
+            alert('There was an error placing your order.');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Calculate the total price (including delivery fee)
+function calculateTotalPrice() {
+    let total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    total += deliveryFee;  // Include delivery fee in the total
+    return total;
+}
+
+// Initial render of the cart
+renderCart();
+</script>
+
+</body>
+</html>

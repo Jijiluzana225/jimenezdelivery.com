@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Store Locations</title>
+    <style>
+        /* Set the size of the map */
+        #map {
+            height: 600px;
+            width: 100%;
+        }
+    </style>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAp38ahRHi7YSU7iDITGyvJSHT6uo8-RFE&callback=initMap&v=weekly" 
+            async defer></script>
+    <script>
+        let map;
+
+        function initMap() {
+            // Initialize the map without a fixed center
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 15, // Default zoom level
+            });
+
+            // Create a LatLngBounds object to adjust the map view dynamically
+            const bounds = new google.maps.LatLngBounds();
+
+            // Define an array of store locations
+            const stores = [
+                {% for store in stores %}
+                {
+                    name: "{{ store.name|escapejs }}",
+                    location: "{{ store.location|escapejs }}",
+                    picture: "{{ store.picture.url|escapejs }}"
+                },
+                {% endfor %}
+            ];
+
+            // Loop through the stores data
+            stores.forEach((store) => {
+                if (store.location && store.location.includes(',')) {
+                    // Split the location by ',' to get latitude and longitude
+                    const [latitude, longitude] = store.location.split(',');
+
+                    // Validate the latitude and longitude
+                    if (!isNaN(parseFloat(latitude)) && !isNaN(parseFloat(longitude))) {
+                        const storeLatLng = { lat: parseFloat(latitude), lng: parseFloat(longitude) };
+
+                        // Create a marker for this store
+                        const marker = new google.maps.Marker({
+                            position: storeLatLng,
+                            map: map,
+                            title: store.name, // Store's name as the title
+                        });
+
+                        // Create an InfoWindow with the store's picture and name
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: `
+                                <div style="text-align: center;">
+                                    <h3>${store.name}</h3>
+                                    <img src="${store.picture}" alt="${store.name}" style="max-width: 150px; height: auto;">
+                                </div>
+                            `,
+                        });
+
+                        // Automatically open the InfoWindow for this marker
+                        infoWindow.open(map, marker);
+
+                        // Extend the bounds to include this marker's position
+                        bounds.extend(storeLatLng);
+                    }
+                }
+            });
+
+            // Adjust the map to fit all markers within the bounds
+            if (stores.length > 0) {
+                map.fitBounds(bounds);
+
+                // Override the zoom to 15x after fitting bounds
+                google.maps.event.addListenerOnce(map, 'bounds_changed', function () {
+                    map.setZoom(15);
+                });
+            } else {
+                // If no valid locations, display a default message or log an error
+                alert("No valid store locations available to display.");
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>All Store Locations on the Map</h1>
+    <div id="map"></div>
+</body>
+</html>

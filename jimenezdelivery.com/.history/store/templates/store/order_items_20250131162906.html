@@ -1,0 +1,249 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Order {{ order.id }} Items{% endblock %}
+
+{% block content %}
+<style>
+    /* General Styling */
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+    }
+
+    h2 {
+        font-size: 2.5rem;
+        text-align: center;
+        margin: 20px 0;
+        color: #333;
+    }
+
+    .items-table-container {
+        width: 95%;
+        max-width: 1200px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .items-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .items-table th, 
+    .items-table td {
+        padding: 12px 15px;
+        text-align: center;
+        font-size: 1rem;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .items-table th {
+        background-color: #f1f1f1;
+        color: #333;
+        font-weight: bold;
+    }
+
+    .items-table tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+
+    .items-table tr:hover {
+        background-color: #f1f1f1;
+    }
+
+    .action-btn {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        color: #fff;
+    }
+
+    .update-btn {
+        background-color: #007bff;
+    }
+
+    .update-btn:hover {
+        background-color: #0056b3;
+    }
+
+    .delete-btn {
+        background-color: #dc3545;
+    }
+
+    .delete-btn:hover {
+        background-color: #c82333;
+    }
+
+    input[type="number"] {
+        width: 60px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        text-align: center;
+    }
+
+    /* Responsive Design for Tablets */
+    @media (max-width: 768px) {
+        h2 {
+            font-size: 2rem;
+        }
+
+        .items-table th, 
+        .items-table td {
+            padding: 8px;
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Responsive Design for Mobile */
+    @media (max-width: 480px) {
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        .items-table-container {
+            padding: 10px;
+        }
+
+        .items-table th, 
+        .items-table td {
+            padding: 6px;
+            font-size: 0.75rem;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+        }
+
+        input[type="number"] {
+            width: 50px;
+        }
+
+        /* Make table scrollable for very small screens */
+        .items-table-container {
+            overflow-x: auto;
+
+        }
+
+        .items-table {
+            display: block;
+            width: 100%;
+            overflow-x: scroll;
+            padding-bottom: 10px;
+        }
+
+        .items-table th, 
+        .items-table td {
+            white-space: nowrap;
+        }
+        .order-detail {
+            padding-top:30px;
+        }
+    }
+</style>
+
+<h2>Products for Order #{{ order.id }}</h2>
+
+<div class="items-table-container">
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th>Product Name</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Total Price</th>
+                {% comment %} <th>Actions</th> {% endcomment %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.product_price }}</td>
+                <td>
+                    {{ item.quantity }}
+                </td>
+                <td>{{ item.total_price|floatformat:2 }}</td>
+                {% comment %} <td>
+                    <button class="action-btn update-btn" onclick="updateItem({{ item.id }})">Update</button>
+                </td> {% endcomment %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+<!-- New Containers for Money and Instructions -->
+    <div class="order-detail">
+    Total Amount + Delivery Fee:
+    <span style="color:Yellow; font-size:30px"><strong>{{ order.total_price|floatformat:2 }}</strong></span>
+    </div>
+
+    <div class="order-detail">
+        <strong>Money: </strong>
+        <span style="color:Blue">{{ order.money|floatformat:2 }}</span>
+    </div>
+    
+        <strong>Instructions: </strong>
+        <p style="color:Blue">{{ order.instructions }}</p>
+    </div>
+    </div>
+</div>
+
+<script>
+    function updateItem(itemId) {
+        const quantity = document.getElementById(`quantity-${itemId}`).value;
+
+        fetch(`/update-item/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ quantity: quantity })
+        })
+        .then(response => {
+            if (response.ok) {
+                alert('Item updated successfully!');
+                location.reload();
+            } else {
+                alert('Failed to update item.');
+            }
+        });
+    }
+
+    function deleteItem(itemId) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            fetch(`/delete-item/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Item deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to delete item.');
+                }
+            });
+        }
+    }
+</script>
+
+{% endblock %}

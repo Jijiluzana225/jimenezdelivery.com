@@ -1,0 +1,121 @@
+{% extends 'store/base.html' %}
+
+{% block title %}Order from {{ store.name }}{% endblock %}
+
+{% block content %}
+<style>
+    /* Existing styles... */
+
+    /* Fixed Go to Cart Box */
+    .go-to-cart-box {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background-color: #3498db;
+        color: #fff;
+        padding: 15px 30px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s ease;
+    }
+
+    .go-to-cart-box:hover {
+        background-color: #2980b9;
+    }
+
+    /* Other styles for the cart and products... */
+</style>
+
+<div class="container">
+    <div class="left-column">
+        <!-- Store and Product Listings... -->
+    </div>
+
+    <!-- Right column (cart) -->
+    <div class="right-column">
+        <h2>Your Cart</h2>
+        <div class="cart-items" id="cart-items"></div>
+        <div class="cart-total" id="cart-total" style="font-size:40px; color:blue;">Total: 0.00</div>
+
+        <!-- Additional Content for Cart... -->
+    </div>
+</div>
+
+<!-- Go to Cart Box -->
+<div id="go-to-cart-box" class="go-to-cart-box">
+    Go to Cart
+</div>
+
+<script>
+    let cart = [];
+
+    function formatPrice(price) {
+        return new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(price);
+    }
+
+    function addToCart(itemId, itemName, itemPrice) {
+        const quantity = parseInt(document.getElementById(`quantity-${itemId}`).value);
+        const existingItem = cart.find(item => item.id === itemId);
+
+        if (existingItem) {
+            existingItem.quantity += quantity;
+        } else {
+            cart.push({ id: itemId, name: itemName, price: itemPrice, quantity: quantity });
+        }
+
+        renderCart();
+    }
+
+    function updateCartItem(itemId, newQuantity) {
+        const item = cart.find(item => item.id === itemId);
+        if (item) {
+            item.quantity = newQuantity;
+            renderCart();
+        }
+    }
+
+    function deleteCartItem(itemId) {
+        cart = cart.filter(item => item.id !== itemId);
+        renderCart();
+    }
+
+    function renderCart() {
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartTotal = document.getElementById('cart-total');
+        const orderButton = document.getElementById('orderButton');
+        cartItemsContainer.innerHTML = '';
+        let total = 0;
+
+        cart.forEach(item => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
+
+            cartItemsContainer.innerHTML += ` 
+                <div class="cart-item">
+                    <p>${item.name}</p>
+                    <p>Price: ${formatPrice(item.price)}</p>
+                    <input type="number" min="1" value="${item.quantity}" onchange="updateCartItem(${item.id}, this.value)">
+                    <p>${formatPrice(itemTotal)}</p>
+                    <button onclick="deleteCartItem(${item.id})">×</button>
+                </div>
+            `;
+        });
+
+        cartTotal.innerText = `Total: ${formatPrice(total)}`;
+
+        // Enable the "Order Now" button only if the cart is not empty
+        orderButton.disabled = cart.length === 0;
+    }
+
+    // Smooth scroll to the right column when the Go to Cart box is clicked
+    document.getElementById('go-to-cart-box').addEventListener('click', function() {
+        document.querySelector('.right-column').scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    });
+</script>
+
+{% endblock %}

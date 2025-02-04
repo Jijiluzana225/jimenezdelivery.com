@@ -1,0 +1,46 @@
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <!-- Display UserForm fields -->
+    <div class="mb-4">
+        <h2 class="form-section-title">Account Information</h2>
+        <div class="row mb-3">
+            <label for="id_username" class="col-sm-4 col-form-label">Username</label>
+            <div class="col-sm-8">
+                {{ user_form.username }}
+                {% for error in user_form.username.errors %}
+                    <div class="error-text">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row mb-3">
+            <label for="id_email" class="col-sm-4 col-form-label">Email</label>
+            <div class="col-sm-8">
+                {{ user_form.email }}
+                {% for error in user_form.email.errors %}
+                    <div class="error-text">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Display CustomerProfileForm fields -->
+    <div class="mb-4">
+        <h2 class="form-section-title">Profile Information</h2>
+        <div class="row mb-3">
+            <label for="id_name" class="col-sm-4 col-form-label">Full Name</label>
+            <div class="col-sm-8">
+                {{ profile_form.name }}
+                {% for error in profile_form.name.errors %}
+                    <div class="error-text">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Other fields follow the same structure -->
+    </div>
+    
+    <!-- Submit Button -->
+    <div class="text-center">
+        <button type="submit" class="btn btn-save">Save Changes</button>
+    </div>
+</form>

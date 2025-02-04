@@ -1,0 +1,56 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <div class="container py-4">
+        <h1 class="text-center mb-4">Product List</h1>
+
+        <!-- Search Box -->
+        <div class="search-box mb-4">
+            <input type="text" id="productSearch" class="form-control" placeholder="Search for a product..." onkeyup="filterProducts()">
+        </div>
+
+        <div class="text-end mb-4">
+            <a href="{% url 'product_create' %}" class="btn btn-primary">Add Product</a>
+        </div>
+
+        <div class="row g-4" id="productList">
+            {% for product in products %}
+            <div class="col-6 col-sm-6 col-md-4 col-lg-3 product-item">
+                <div class="card h-100">
+                    <img src="{{ product.picture.url }}" class="card-img-top product-image" alt="{{ product.name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ product.name }}</h5>
+                        <p class="card-text">{{ product.description }}</p>
+                        <p class="text-muted fw-bold">Price: {{ product.price }}</p>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'product_update' product.pk %}" class="btn btn-info btn-sm">Edit</a>
+                            <form action="{% url 'product_delete' product.pk %}" method="POST">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // JavaScript to filter products by name
+        function filterProducts() {
+            const searchInput = document.getElementById('productSearch').value.toLowerCase();
+            const productList = document.getElementById('productList');
+            const products = productList.getElementsByClassName('product-item');
+
+            for (let i = 0; i < products.length; i++) {
+                const productName = products[i].getElementsByClassName('card-title')[0].innerText.toLowerCase();
+                if (productName.includes(searchInput)) {
+                    products[i].style.display = '';
+                } else {
+                    products[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+{% endblock %}

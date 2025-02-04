@@ -1,0 +1,79 @@
+{% extends "store/base.html" %}
+
+{% block title %}Update Store Status{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Update Store Status</h1>
+
+    <div class="card shadow-sm p-4">
+        <div class="card-body">
+            <p class="lead text-muted">Store Name: <strong>{{ store.name }}</strong></p>
+
+            <form method="post">
+                {% csrf_token %}
+                <div class="form-group mb-3">
+                    {{ form.as_p }}
+                </div>
+                <button type="submit" class="btn btn-success btn-block custom-btn">Update</button>
+            </form>
+
+            <div class="mt-4">
+                <a href="{% url 'store_list' %}" class="btn btn-secondary btn-block custom-btn">Back to Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block styles %}
+    <style>
+        .custom-btn {
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 15px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .custom-btn:hover {
+            background-color: #5cb85c;
+            transform: scale(1.05);
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
+
+        .card-body {
+            font-size: 16px;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        h1 {
+            color: #495057;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        p.lead {
+            font-size: 1.25rem;
+            color: #6c757d;
+        }
+
+        a {
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% endblock %}

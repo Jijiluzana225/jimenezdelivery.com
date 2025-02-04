@@ -1,0 +1,96 @@
+{% extends 'store/base.html' %}
+{% load humanize %}
+
+{% block title %}Customer Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    /* Your styles... */
+</style>
+
+<h1 class="dashboard-title">Your Orders</h1>
+
+{% if orders %}
+    <div class="orders-table-container">
+        <table class="orders-table">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Store</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Placed On</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    <tr class="order-row" 
+                        style="background-color: 
+                            {% if order.status == 'Pending' %}White
+                            {% elif order.status == 'Declined' %}Orange
+                            {% elif order.status == 'Preparing' %}lightYellow
+                            {% elif order.status == 'On the Way' %}Aqua
+                            {% elif order.status == 'Delivered' %}lightgreen
+                            {% else %}#ffffff
+                            {% endif %};">
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.store.name }}</td>
+                        <td>{{ order.total_price|floatformat:2|intcomma }}</td>
+                        <td class="status">{{ order.status }}</td>
+                        <td>{{ order.created_at }}</td>
+                        <td><a href="/order/{{ order.id }}/items" class="btn btn-primary">Orders</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p class="no-orders-message">You have no orders yet.</p>
+{% endif %}
+
+<!-- JavaScript for Notification and Sound -->
+
+<audio id="newOrderSound">
+    <source src="/static/sounds/notification.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+    {% if status_changes %}
+        // Play a sound alert when an order status changes
+        var audio = document.getElementById('newOrderSound');
+        try {
+            var playPromise = audio.play();
+
+            // If play() is successful, add an event listener for 'ended'
+            if (playPromise !== undefined) {
+                playPromise.then(function() {
+                    audio.onended = function () {                       
+                        location.reload(); 
+                        // Reload after the sound finishes playing
+                    };
+                }).catch(function(error) {
+                    // If an error occurs (e.g., blocked audio), just alert and reload
+                   
+                    location.reload(); 
+                });
+            }
+        } catch (error) {
+            // If there's an error with play, trigger the alert and reload immediately            
+            location.reload(); 
+        }
+
+        // Show browser notification for each changed order
+       
+    {% else %}
+        // Request permission for notifications if not already granted
+        if (Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    {% endif %}
+
+  
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'store/base.html' %}
+
+{% block content %}
+    <title>Store and Customer Location</title>
+    <style>
+        /* Styles (same as before) */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+            margin-top: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 20px;
+            border: 2px solid #ddd;
+        }
+
+        .info-box {
+            text-align: center;
+        }
+
+        .info-box h3 {
+            margin: 10px 0;
+            font-size: 1.5rem;
+            color: #555;
+        }
+
+        .info-box img {
+            max-width: 150px;
+            height: auto;
+            border-radius: 10px;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .info-box a {
+            text-decoration: none;
+        }
+
+        .info-box p {
+            margin: 5px 0;
+            font-size: 1rem;
+            color: #666;
+        }
+
+        .info-box a {
+            text-decoration: none;
+            color: #007bff;
+            font-weight: bold;
+        }
+
+        .info-box a:hover {
+            color: #0056b3;
+        }
+
+        .order-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            font-family: 'Arial', sans-serif;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .order-button:hover {
+            background-color: #0056b3;
+        }
+
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: block;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAp38ahRHi7YSU7iDITGyvJSHT6uo8-RFE&callback=initMap&v=weekly" async defer></script>
+
+    <script>
+        let map, storeMarker, customerMarker, directionsService, directionsRenderer;
+        let storeLatLng, customerLatLng;
+
+        function initMap() {
+            const store = {
+                name: "{{ store.name|escapejs }}",
+                location: "{{ store.location|escapejs }}",
+                contact_number: "{{ store.contact_number|escapejs }}",
+                facebook_page: "{{ store.facebook_page|escapejs }}",
+                picture: "{{ store.picture.url|escapejs }}",
+                id: "{{ store.id|escapejs }}"
+            };
+
+            const customer = {
+                name: "{{ customer.name|escapejs }}",
+                location: "{{ customer.location|escapejs }}",
+                contact_number: "{{ customer.phone_number|escapejs }}",
+                facebook_page: "{{ customer.facebook_page|escapejs }}",
+                picture: "{{ customer.profile_picture.url|escapejs }}",
+                id: "{{ customer.id|escapejs }}"
+            };
+
+            const [storeLat, storeLng] = store.location.split(',');
+            storeLatLng = { lat: parseFloat(storeLat), lng: parseFloat(storeLng) };
+
+            const [customerLat, customerLng] = customer.location.split(',');
+            customerLatLng = { lat: parseFloat(customerLat), lng: parseFloat(customerLng) };
+
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: storeLatLng,
+                zoom: 15,
+            });
+
+            storeMarker = new google.maps.Marker({
+                position: storeLatLng,
+                map: map,
+                title: store.name,
+            });
+
+            customerMarker = new google.maps.Marker({
+                position: customerLatLng,
+                map: map,
+                title: customer.name,
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
+
+            const storeInfoWindowContent = `
+                <div class="info-box">
+                    <h3>${store.name}</h3>
+                    <a href="#" onclick="openModal('${store.picture}')">
+                        <img src="${store.picture}" alt="${store.name}" class="store-img">
+                    </a>
+                    <p><strong>Contact:</strong> ${store.contact_number}</p>
+                    <p><a href="${store.facebook_page}" target="_blank">Visit Facebook Page</a></p>
+                    <p id="distance"></p>
+                    <button class="order-button" onclick="placeOrder()">Order Now</button>
+                </div>
+            `;
+
+            const customerInfoWindowContent = `
+                <div class="info-box">
+                    <h3>${customer.name}</h3>
+                    <a href="#" onclick="openModal('${customer.picture}')">
+                        <img src="${customer.picture}" alt="${customer.name}" class="store-img">
+                    </a>
+                    <p><strong>Contact:</strong> ${customer.contact_number}</p>
+                    <p><a href="${customer.facebook_page}" target="_blank">Visit Facebook Page</a></p>
+                </div>
+            `;
+
+            const storeInfoWindow = new google.maps.InfoWindow({
+                content: storeInfoWindowContent,
+            });
+
+            const customerInfoWindow = new google.maps.InfoWindow({
+                content: customerInfoWindowContent,
+            });
+
+            storeInfoWindow.open(map, storeMarker);
+            customerInfoWindow.open(map, customerMarker);
+
+            storeMarker.addListener('click', () => {
+                storeInfoWindow.open(map, storeMarker);
+            });
+
+            customerMarker.addListener('click', () => {
+                customerInfoWindow.open(map, customerMarker);
+            });
+
+            calculateDistance(customerLatLng);
+
+            // Calculate and display route between customer and store
+            const request = {
+                origin: customerLatLng,
+                destination: storeLatLng,
+                travelMode: google.maps.TravelMode.DRIVING,
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                } else {
+                    alert("Directions request failed due to " + status);
+                }
+            });
+        }
+
+        function calculateDistance(customerLatLng) {
+            const service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix(
+                {
+                    origins: [customerLatLng],
+                    destinations: [storeLatLng],
+                    travelMode: google.maps.TravelMode.DRIVING,
+                },
+                (response, status) => {
+                    if (status === google.maps.DistanceMatrixStatus.OK) {
+                        const distance = response.rows[0].elements[0].distance.text;
+                        document.getElementById('distance').innerHTML = `<strong>Distance from you:</strong> ${distance}`;
+                    } else {
+                        console.error('Error fetching distance:', status);
+                    }
+                }
+            );
+        }
+
+        function openModal(imageUrl) {
+            const modal = document.getElementById('myModal');
+            const modalImg = document.getElementById("img01");
+            const span = document.getElementsByClassName("close")[0];
+
+            modal.style.display = "block";
+            modalImg.src = imageUrl;
+
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+        }
+
+        function placeOrder() {
+            const orderUrl = `/store/${store.id}/order`;
+            window.location.href = orderUrl;
+        }
+    </script>
+
+    <div class="container">
+        <h1>Store and Customer Location</h1>
+        <div id="map"></div>
+        <div id="loader" class="loader"></div>
+
+        <div id="myModal" class="modal">
+            <span class="close">&times;</span>
+            <img class="modal-content" id="img01">
+        </div>
+
+        <div id="manual-alert" class="manual-alert">
+            Unable to retrieve your location. Please click on the map to set your current location.
+        </div>
+    </div>
+{% endblock content %}
