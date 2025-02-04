@@ -34,8 +34,8 @@ DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = ['https://*.railway.app',
-                      'https://www.indahagdelivery.com',                      
-                      'https://indahagdelivery.com']
+                      'https://www.jimenezdelivery.com',                      
+                      'https://jimenezdelivery.com']
 
 
 # Application definition
