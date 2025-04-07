@@ -195,7 +195,7 @@
                             <option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
                             <option value="On the Way" {% if order.status == 'On the Way' %}selected{% endif %}>On the Way</option>
                             <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
-                            <option value="Delivered" {% if order.status == 'Waiting for Rider' %}selected{% endif %}>Waiting for Rider</option>
+                            <option value="Waiting for Rider" {% if order.status == 'Waiting for Rider' %}selected{% endif %}>Waiting for Rider</option>
                         </select>
                     </td>
                     <td>
