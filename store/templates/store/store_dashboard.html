@@ -195,6 +195,7 @@
                             <option value="Preparing" {% if order.status == 'Preparing' %}selected{% endif %}>Preparing</option>
                             <option value="On the Way" {% if order.status == 'On the Way' %}selected{% endif %}>On the Way</option>
                             <option value="Delivered" {% if order.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                            <option value="Waiting for Rider" {% if order.status == 'Waiting for Rider' %}selected{% endif %}>Waiting for Rider</option>
                         </select>
                     </td>
                     <td>
@@ -233,6 +234,9 @@
                     break;
                 case 'Delivered':
                     row.style.backgroundColor = 'lightgreen'; // Green (Delivered)
+                    break;
+                case 'Waiting for Rider':
+                    row.style.backgroundColor = 'pink'; // pink (Waiting for Rider)
                     break;
                 default:
                     row.style.backgroundColor = ''; // Default background (if status is empty or unknown)
